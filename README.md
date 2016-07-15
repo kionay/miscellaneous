@@ -1,5 +1,3 @@
-# miscellaneous
-
 <h1>Misc. Repository</h1>
 
 Here are things that I wanted to be on my github.
