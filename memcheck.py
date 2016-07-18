@@ -13,8 +13,8 @@ class MyParser(argparse.ArgumentParser):
 parser = MyParser(description='Gives memory details for different data types.')
 parser.add_argument('--int', action='store_true',
                     help='Assumes the input is a number.')
-parser.add_argument('--float', action='store_true',
-                    help='Assumes the input is a floating point integer.')
+#parser.add_argument('--float', action='store_true',
+#                    help='Assumes the input is a floating point integer.')
 parser.add_argument('input', action='store',
                     default=max,
                     help='Default input of numbers or characters. Assumes a string unless --int is provided.')
