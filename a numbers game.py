@@ -47,11 +47,10 @@ def get_feedback(code,guess):
         if item == "-": # only do this to dashes
             for idx in range(0,code_length):
                 # If this guessed item == the -'ed guess item (but skips the dashed position)
-                if guess[idx] == guess[index] and idx != index:
+                if guess[idx] == guess[index] and idx != index and feedback_reply[idx] == "*":
                     # If we have already given that number an asterisk in the feedback somewhere else
-                    if feedback_reply[idx] == "*":
-                        # Add it to the list we will use to remove characters.
-                        index_replace_list.append(index) 
+                    # Add it to the list we will use to remove characters.
+                    index_replace_list.append(index)       
     for item in index_replace_list:
         feedback_reply = feedback_reply[:item] + "0" + feedback_reply[item+1:] # replace the found 'invalid' dashes with zeros
     # We return having replaced the zeroes with nothing, and then sorting the feedback.
@@ -94,8 +93,7 @@ def play_game():
     clear_screen()
     replay_flag = True
     while replay_flag: # replay loop
-        code = get_code()
-        #print("DEBUG MODE code: {}".format(code))
+        code = "".join([str(random.choice(approved_inputs)) for x in range(0,code_length)])
         try_count = 0
         print("The code has been set.")
         guess_flag = True
@@ -112,7 +110,7 @@ def play_game():
                         break
                 if try_count >= 9: # wrong answer + game over
                     clear_screen()
-                    print("DEBUG MODE code: {}".format(code))
+                    print("The code was {}".format(code))
                     print("You used all of your guesses. Game Over.")
                     if after_game():
                         clear_screen()
@@ -123,12 +121,6 @@ def play_game():
             else:
                 print("Guess is in an invalid format. Must be {} inputs from this list: {}".format(code_length,approved_inputs))
                 continue
-
-def get_code():
-    code = ""
-    for time in range(0,code_length):
-        code += str(random.choice(approved_inputs))
-    return code
 
 # display_menu is only called by hadle_menu.
 # I separated it out into a small function to make changing the 'UI' easier.
