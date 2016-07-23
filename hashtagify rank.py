@@ -71,7 +71,7 @@ def main():
    ordered_weighted = OrderedDict(sorted(sorted_weighted.items()))
 
    for pop in ordered_unweighted:
-       print("Popularity score: {}.\tWords: {}\n".format(pop,ordered__unweighted[pop]))
+       print("Popularity score: {}.\tWords: {}\n".format(pop,ordered_unweighted[pop]))
 
 main()
 
