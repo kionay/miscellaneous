@@ -24,6 +24,25 @@ For example, if the code is 4 digits long, the hidden number is 5577, and you gu
 No indication is given of the fact that the answer also includes a second 7.
 """.format(code_length,approved_inputs)
 
+leader_dict = {"easy":[],"medium":[],"hard":[]}
+
+class Leader():
+    name = ""
+    score = "0"
+    difficulty = ""
+    def __init__(self,name="",score="0",difficulty="easy"):
+        self.name = name
+        self.score = score
+        self.difficulty = difficulty
+        if 0 in [len(name),len(score),len(difficulty)]:
+            raise Exception("no empty values allowed")
+        if difficulty not in ["easy","medium","hard"]:
+            raise Exception("invalid difficulty: {}".format(difficulty))
+        if not str(score).isnumeric():
+            raise Exception("invalid score ({}); must be a number".format(score))
+        if str(name).isspace():
+            raise Exception("invalid name; must contain non-whitespace characters")
+
 def clear_screen(): # handles windows and linux
     clear_screen_map = {"nt":"cls", # windows
                         "posix":"clear"} # linux
@@ -71,7 +90,7 @@ def after_game():
             # Similarly I have a feeling that memories issues aren't going to arise from such a simple program.
             handle_menu()
         else:
-            input("Press any key to exit.")
+            input("Press enter to exit.")
             exit()
 
 def yes_no(question,loop=True):
@@ -90,6 +109,7 @@ def yes_no(question,loop=True):
         
     
 def play_game():
+    query_difficulty()
     clear_screen()
     replay_flag = True
     while replay_flag: # replay loop
@@ -100,11 +120,12 @@ def play_game():
         while guess_flag:
             this_guess = input("Tries remining: {0:02d}. Your guess: ".format(10-try_count)) # always let them know how many tries are left
             # Limit guessing to being only numbers, being only 4 characters long, and being within a list of approved numbers (6 to make it easier.)
-            if this_guess.isdigit() and len(this_guess) == code_length and any(str(num) in this_guess for num in approved_inputs):
+            if this_guess.isdigit() and len(this_guess) == code_length and all(num in map(str,approved_inputs) for num in list(this_guess)):
                 #valid formatted guess
                 if this_guess == code: # correct answer
                     clear_screen()
                     print("{} is correct!".format(code))
+                    decide_leader(try_count)
                     if after_game():
                         clear_screen()
                         break
@@ -122,6 +143,94 @@ def play_game():
                 print("Guess is in an invalid format. Must be {} inputs from this list: {}".format(code_length,approved_inputs))
                 continue
 
+def decide_leader(try_count):
+    this_score = 10-try_count
+    difficulty = ""
+    if code_length == 2:
+        difficulty = "easy"
+    elif code_length == 4:
+        difficulty = "medium"
+    elif code_length == 6:
+        difficulty = "hard"
+    add_flag = False
+    if len(leader_dict[difficulty]) < 10:
+        add_flag = query_leader(difficulty,this_score)
+    elif int(leader_dict[difficulty][-1].score) >= this_score:
+        print("Sorry, your score of {} didn't make the {} leaderboard.".format(this_score,difficulty))
+    else:
+        add_flag = query_leader(difficulty,this_score)
+
+def query_leader(difficulty,score):
+    print("Congradulations, with a score of {} you can make the {} leaderboard.".format(score,difficulty))
+    descision = yes_no("Would you like to place on the leaderboard? ")
+    if descision:
+        while True:
+            name = input("What is your name?\n\t>>")
+            if name.isspace() or len(name) == 0:
+                print("No blank names.")
+            else:
+                clear_screen()
+                add_leader(name,score,difficulty)
+                display_leaders(difficulty)
+                break
+        
+
+def add_leader(name,score,difficulty):
+    global leader_dict
+    new_leader = Leader(str(name),str(score),str(difficulty))
+    new_pos = 0
+    for index,item in enumerate(leader_dict[str(difficulty)]):
+        if int(item.score) >= int(new_leader.score):
+            new_pos = index+1
+    leader_dict[str(difficulty)] = leader_dict[str(difficulty)][:new_pos] + [new_leader] + leader_dict[str(difficulty)][new_pos:]
+    if len(leader_dict[str(difficulty)]) > 10:
+        leader_dict[str(difficulty)] = leader_dict[str(difficulty)][:10]
+
+
+def display_leaders(diff_board=""):
+    if diff_board == "":
+        for diff in ["easy","medium","hard"]:
+            display_leaders(diff)
+    else:
+        print("=={} LEADERBOARD==".format(diff_board.upper()))
+        if len(leader_dict[diff_board]) == 0:
+            print("Leaderboard is empty.\n")
+            return
+        longest_leader = [0,0,0]
+        for leader in leader_dict[diff_board]:
+            if len(leader.name) > longest_leader[0]:
+                longest_leader[0] = len(leader.name)
+            if len(leader.score) > longest_leader[1]:
+                longest_leader[1] = len(leader.score)
+            if len(leader.difficulty) > longest_leader[2]:
+                longest_leader[2] = len(leader.difficulty)
+        for leader in leader_dict[diff_board]:
+            print("{} | {} | {}".format(leader.name + (" "*(longest_leader[0] - len(leader.name))),
+                                        leader.score + (" "*(longest_leader[1] - len(leader.score))),
+                                        leader.difficulty + (" "*(longest_leader[2] - len(leader.difficulty)))))
+        print()
+
+def query_difficulty():
+    global code_length
+    clear_screen()
+    while True:
+        print("What difficulty would you play to play on?\n"
+              "1. Easy      (2 digit codes)\n"
+              "2. Medium    (4 digit codes)\n"
+              "3. Hard      (6 digit codes)\n")
+        choice = input()
+        if choice.lower() not in ["1","2","3","easy","medium","hard"]:
+            clear_screen()
+            print("Invalid Choice, Try Again.")
+        else:
+            if choice.lower() in ["1","easy"]:
+                code_length = 2
+            elif choice.lower() in ["2","medium"]:
+                code_length = 4
+            elif choice.lower() in ["3","hard"]:
+                code_length = 6
+            break
+
 # display_menu is only called by hadle_menu.
 # I separated it out into a small function to make changing the 'UI' easier.
 def display_menu(error=""): 
@@ -129,7 +238,8 @@ def display_menu(error=""):
     print(error)
     print("1. Play\n"
           "2. Rules\n"
-          "3. Exit\n")
+          "3. Leaderboard\n"
+          "4. Exit\n")
     return input("choice: ")
 
 # Simple menu logic.
@@ -139,7 +249,7 @@ def handle_menu():
         clear_screen()
         menu_choice = display_menu(menu_error)
         menu_error = ""
-        if menu_choice not in ["1","2","3"]:
+        if menu_choice not in ["1","2","3","4"]:
             os.system("cls")
             menu_error = "Unknown menu choice, please try again."
             continue
@@ -148,10 +258,16 @@ def handle_menu():
         elif menu_choice == "2":
             clear_screen()
             print(rules)
-            input("Press any key to return to the menu.")
+            input("Press enter to return to the menu.")
+            continue
+        elif menu_choice == "3":
+            clear_screen()
+            display_leaders()
+            input("Press enter to return to the menu.")
             continue
         else:
-            input("Press any key to exit.")
+            input("Press enter to exit.")
+            clear_screen()
             exit()
 
 handle_menu()
