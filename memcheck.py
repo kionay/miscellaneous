@@ -2,6 +2,7 @@ import ctypes
 import collections
 import argparse
 import sys
+import json
 from sys import getsizeof, stdout
 
 class MyParser(argparse.ArgumentParser):
@@ -15,6 +16,8 @@ parser.add_argument('--int', action='store_true',
                     help='Assumes the input is a number.')
 #parser.add_argument('--float', action='store_true',
 #                    help='Assumes the input is a floating point integer.')
+parser.add_argument('--json', action='store_true',
+                     help='Assumes the input is a properly python-formatted json-loadable collection. example: [14,\"test\",{\"first name\":\"last name\"}]')
 parser.add_argument('input', action='store',
                     default=max,
                     help='Default input of numbers or characters. Assumes a string unless --int is provided.')
@@ -50,21 +53,30 @@ def mem_check(check_var):
 	elif type(check_var) in [list, set, tuple]:
 		for sub_item in check_var:
                         mem_check(sub_item)
+                        print()
         # Slightly different from the lists and sets, the dictionaries iterate over their values, not their keys.
         # The design choice of values and not keys was exactly "eh, that sounds about right."
 	elif type(check_var) in [dict, collections.OrderedDict]:
                 for key, value in check_var.items():
                         print("dictionary key: {}. value: {}:".format(key,value))
                         mem_check(value)
+                        print()
 	else:
                 print("object ({}) @ address {}\ntype not yet supported: {}".format(check_var,str(hex(id(check_var))),str(type(check_var))))
 
 this_input = args.input
-if args.int or args.float:
+print("exact input as recieved:\r\n{}".format(this_input))
+if args.int:# or args.float:
         try:
                 this_input = int(this_input) if args.int else float(this_input)
         except ValueError:
                 print("ERROR: Improperly formatted number with --int flag.")
+                exit()
+if args.json:
+        try:
+                this_input = json.loads(this_input)
+        except ValueError:
+                print("ERROR: Improperly formatted items with --json flag.")
                 exit()
 
 mem_check(this_input)
