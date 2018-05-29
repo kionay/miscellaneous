@@ -26,3 +26,9 @@ A set of functions to test the differences and similarities of various algorithm
 https://blog.nishtahir.com/2015/09/20/fuzzy-string-matching-using-cosine-similarity/
 
 Those vectors are then given to the various algorithms. The idea is to evaluate the algorithms to use for fuzzy string matching.
+
+## ama update
+
+Uses PRAW to, periodically, check a given user's recent submissions for an AMA.
+
+For when you can just never seem to catch your favorite person's rare AMA.
