@@ -32,3 +32,11 @@ Those vectors are then given to the various algorithms. The idea is to evaluate 
 Uses PRAW to, periodically, check a given user's recent submissions for an AMA.
 
 For when you can just never seem to catch your favorite person's rare AMA.
+
+## discord notify
+
+Uses the 'rewrite' branch of the discord.py library.
+Uses the most recent aiohttp, discord might complain about this, but ignore that warning.
+
+Hosts a small python web server (aiohttp) and, upon a request to localhost on port 8082, will update the discord channel via a webhook.
+For example, to have the webhook/bot communicate "Hello World" you would do a GET request to http://localhost:8082/Hello%20World.
